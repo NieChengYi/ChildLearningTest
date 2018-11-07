@@ -21,12 +21,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String INDEX_KEY = "index_key";
 
-    private static final String[] MP3_ARR = {"a01.mp3", "a02.mp3", "a03.mp3", "a04.mp3"};
-    private static final int[] ANIMAL_ARR = {R.drawable.a001, R.drawable.a002, R.drawable.a003, R.drawable.a004};
+    private static final String[] NAME_ARR = {"老虎", "獅子", "斑馬", "鴕鳥", "小狗", "飛機", "橘子", "蘋果", "香蕉", "大象"};
+    private static final String[] MP3_ARR = {"a01.mp3", "a02.mp3", "a03.mp3", "a04.mp3", "a05.mp3", "a06.mp3", "a07.mp3", "a08.mp3", "a09.mp3", "a10.mp3"};
+
+    private static final int[] IMAGE_ARR = {R.drawable.a001, R.drawable.a002, R.drawable.a003, R.drawable.a004, R.drawable.a005, R.drawable.a006, R.drawable.a007, R.drawable.a008, R.drawable.a009, R.drawable.a010};
 
     private int mIndex;
 
     private EditText mSoundET;
+
+    private MediaPlayer mMediaPlayer;
+
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         ImageView imageView = findViewById(R.id.imageView001);
-        imageView.setImageResource(ANIMAL_ARR[mIndex]);
+        imageView.setImageResource(IMAGE_ARR[mIndex]);
         imageView.setOnClickListener(this);
+
+        TextView nameTxv = findViewById(R.id.nameTxv);
+        nameTxv.setText(NAME_ARR[mIndex]);
 
         mSoundET = findViewById(R.id.soundEditText);
         mSoundET.requestFocus();
@@ -72,6 +81,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ConstraintLayout constraintLayout = findViewById(R.id.constraintLayout_main);
         constraintLayout.setOnClickListener(this);
+
+        try {
+            AssetFileDescriptor descriptor = getAssets().openFd(MP3_ARR[mIndex]);
+
+            mMediaPlayer = new MediaPlayer();
+
+            mMediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
+
+            descriptor.close();
+
+            mMediaPlayer.prepare();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mHandler = new Handler();
     }
 
     @Override
@@ -82,24 +109,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void action() {
-        try {
-            AssetFileDescriptor descriptor = getAssets().openFd(MP3_ARR[mIndex]);
 
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
-
-            descriptor.close();
-
-            mediaPlayer.prepare();
-
-            if (!mediaPlayer.isPlaying()) {
-                mediaPlayer.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!mMediaPlayer.isPlaying()) {
+            mMediaPlayer.start();
         }
 
-        new Handler().postDelayed(new Runnable() {
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 int index = EJB.getInstance().getIndex();
